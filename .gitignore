@@ -1,0 +1,8 @@
+*.asv
+scratch*
+data/*
+*.html
+*.xlsx
+!testread.xlsx
+output/*
+archive/*
