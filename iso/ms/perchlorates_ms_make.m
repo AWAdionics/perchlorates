@@ -28,7 +28,7 @@ function simulation = perchlorates_ms_make(case_name)
     
 
     simulation = struct('pitzer', ...
-        pitzer_make(cations,anions), ...
+                        struct(), ...
                         'input', ...
         struct('ini',struct(),'aqeq',struct(),'orgeq',struct(),'T',mvu(293.15,' K')), ...
                         'ions',...
@@ -45,13 +45,31 @@ function simulation = perchlorates_ms_make(case_name)
         switch true 
             case endsWith(name_row{i},ini_name)
                 ion = erase(name_row{i}, ini_name);
-                simulation.input.ini.(ion) = mvu(values(:,i),unit_row{i});
+                %only 1 cation, others are 0
+                %only 1 anion, no others
+                if (ismember(ion,cations) && any(values(:,i) > 0)) || ismember(ion,anions)
+                    simulation.input.ini.(ion) = mvu(values(:,i),unit_row{i});
+                    %save name of cation for final display
+                    if ismember(ion,cations)
+                        simulation.input.cation = ion;
+                        simulation.input.anion = 'ClO4';
+                        simulation.pitzer = pitzer_make({ion},{'ClO4'});
+                    end
+                end
             case endsWith(name_row{i},aqeq_name)
                 ion = erase(name_row{i}, aqeq_name);
-                simulation.input.aqeq.(ion) = mvu(values(:,i),unit_row{i});
+                %only 1 cation, others are 0
+                %only 1 anion, no others
+                if (ismember(ion,cations) && any(values(:,i) > 0)) || ismember(ion,anions)
+                    simulation.input.aqeq.(ion) = mvu(values(:,i),unit_row{i});
+                end
             case endsWith(name_row{i},orgeq_name)
                 ion = erase(name_row{i}, orgeq_name);
-                simulation.input.orgeq.(ion) = mvu(values(:,i),unit_row{i});
+                %only 1 cation, others are 0
+                %only 1 anion, no others
+                if (ismember(ion,cations) && any(values(:,i) > 0)) || ismember(ion,anions)
+                    simulation.input.orgeq.(ion) = mvu(values(:,i),unit_row{i});
+                end
             case strcmp(name_row{i},mass_name)
                 simulation.input.brinemass = mvu(values(:,i),unit_row{i});
             case strcmp(name_row{i},temperature_name)
@@ -80,7 +98,7 @@ function simulation = perchlorates_ms_make(case_name)
 
     %feeds
     feed_c = cellfun(@(k) simulation.input.ini.(k),  ...
-                               simulation.constants.cations, ...
+                               {simulation.input.cation}, ...
                                'UniformOutput', false);
     feed_c = [feed_c{:}]';
     feed_a = cellfun(@(k) simulation.input.ini.(k),  ...
@@ -91,7 +109,7 @@ function simulation = perchlorates_ms_make(case_name)
 
     %molar mass vectors
     cations_M = cellfun(@(k) simulation.ions.M.(k),  ...
-                             simulation.constants.cations, ...
+                             {simulation.input.cation}, ...
                              'UniformOutput', false);
     cations_M = [cations_M{:}]';
     anions_M  = cellfun(@(k) simulation.ions.M.(k),  ...
