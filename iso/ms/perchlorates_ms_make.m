@@ -2,7 +2,7 @@ function simulation = perchlorates_ms_make(case_name)
     %sulfates_ms_make makes the simulation struct for monosel 
     %
     %   Args :
-    %       casename : char of casename in input/excel/sulfates_ms_casename.xslx
+    %       casename : char of casename in input/excel/perchlorates_ms_casename.xslx
     %
     %   Returns :
     %       simulation : struct containing simulation data
@@ -10,7 +10,9 @@ function simulation = perchlorates_ms_make(case_name)
     %   see also sulfates_ms_index (index)
     %   sulfates_excel_read (used)
     %   sulfates_density (used)
-    
+    arguments (Input)
+        case_name char
+    end
     excel_name = [NamesMsPerchlorates.excel_name,'_',case_name,'.xlsx'];
     cations = NamesMsPerchlorates.cations;
     anions = NamesMsPerchlorates.anions;
