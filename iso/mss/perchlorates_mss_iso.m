@@ -20,7 +20,7 @@ function perchlorates_mss_iso(casename)
     cations = simulation.constants.cations_extracted;
     anions = simulation.constants.anions_extracted;
     rho = simulation.constants.rho;
-    OA = simulation.constants.OA;
+    OA = simulation.input.OA;
     zc = simulation.constants.zc;
     extracted_cations = 1:length(cations);
     extracted_anions = [1];
@@ -36,7 +36,7 @@ function perchlorates_mss_iso(casename)
             ca,feed_aq_a(extracted_anions,i),OA(i)),rho(i));
         fyc(extracted_cations,i) = yc;
         fya(extracted_anions,i) = ya;
-        gamma = pitzer_mss_gamma(simulation,fyc,fya,simulation.input.T(i), ...
+        gamma = pitzer_mss_gamma(simulation,fyc(:,i),fya(:,i),simulation.input.T(i), ...
                                  extracted_cations,extracted_anions);
         raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(i),gamma);
         error = sulfates_mse(raw_error);
@@ -44,7 +44,8 @@ function perchlorates_mss_iso(casename)
 
     function [c, ceq] = constraint(input,i)
         cc = mvu(input,'mmol/ L');
-        yc = perchlorates_ctoy(perchlorates_ceq_aq(cc,cc_ini(i),OA),rho(i));
+        yc = perchlorates_ctoy(perchlorates_ceq_aq( ...
+            cc,feed_aq_c(extracted_cations,i),OA(i)),rho(i));
         c = -[input,yc.value];     % Enforces: x > 0 ⇒ -x < 0
         ceq = [];   % No equality constraints
     end

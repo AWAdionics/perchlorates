@@ -52,13 +52,13 @@ function simulation = perchlorates_mss_make(case_name)
                 ion = erase(name_row{i}, aqini_name);
                 simulation.input.aqini.(ion) = mvu(values(:,i),unit_row{i});
                 %if initializng at aq, ini org is 0
-                simulation.input.orgini.(ion) = mvu(0,unit_row{i});
+                simulation.input.orgini.(ion) = mvu(0*values(:,i),unit_row{i});
             case endsWith(name_row{i},orgini_name)
                 %initializing at org
                 ion = erase(name_row{i}, orgini_name);
                 simulation.input.aqini.(ion) = mvu(values(:,i),unit_row{i});
                 %if initializng at org, ini aq is 0
-                simulation.input.orgini.(ion) = mvu(0,unit_row{i});
+                simulation.input.orgini.(ion) = mvu(0*values(:,i),unit_row{i});
             case endsWith(name_row{i},aqeq_name)
                 %equilibrium
                 ion = erase(name_row{i}, aqeq_name);
@@ -80,6 +80,8 @@ function simulation = perchlorates_mss_make(case_name)
         end
     end
     
+    % reorganize into mss simulation format
+    %molar masses
     n = length(values(:,i));
     for i=1:length(cations)
         ion = cations{i};
@@ -89,29 +91,30 @@ function simulation = perchlorates_mss_make(case_name)
         ion = anions{i};
         simulation.ions.M.(ion) = mavu(molar_mass.(ion).value+zeros(n,1),molar_mass.(ion).unit);
     end
-    
-    simulation.constants.OA = simulation.constants.OA;
+
+    %ions
     simulation.constants.cations = cations;
     simulation.constants.anions = anions;
     simulation.constants.cations_extracted = cations_extracted;
     simulation.constants.anions_extracted = anions_extracted;
     
-    simulation.constants.Kapp = mvu([],'');
-    for i=1:length(cations_extracted)
-        ion = cations{i};
-        simulation.constants.Kapp = [simulation.constants.Kapp,simulation.input.Kapps.(ion)];
-    end
-
-    %precompute
-
-    %charges
+    %charge vector
     zcs = mvu([],'');
     for i=1:length(cations_extracted)
         cation = cations_extracted{i};
         zcs = [zcs;mvu(ConstantsPitzer.charges.(cation),'')];
     end
     simulation.constants.zc = zcs;
-    %
+    
+    %Kapp VECTOR
+    simulation.constants.Kapp = mvu([],'');
+    for i=1:length(cations_extracted)
+        ion = cations{i};
+        simulation.constants.Kapp = [simulation.constants.Kapp,simulation.input.Kapps.(ion)];
+    end
+    
+    %pitzer model
+    simulation.pitzer = pitzer_make(cations,anions);
 
     %construct feed matrices
     feed_aq_c = cellfun(@(k) simulation.input.aqini.(k),  ...
@@ -134,7 +137,7 @@ function simulation = perchlorates_mss_make(case_name)
                               'UniformOutput', false);
     feed_org_a = [feed_org_a{:}]';
     simulation.constants.feed_org_a = feed_org_a;
-    %
+    
 
     %molar mass vectors
     cations_M = cellfun(@(k) simulation.ions.M.(k),  ...
@@ -146,7 +149,11 @@ function simulation = perchlorates_mss_make(case_name)
                              'UniformOutput', false);
     anions_M = [anions_M{:}]';
 
+    %
 
+    %precompute
+    
+    %density
     n = length(simulation.input.aqini.Li);
     rhoval = zeros(n,1);
     
@@ -160,4 +167,5 @@ function simulation = perchlorates_mss_make(case_name)
     end
     simulation.constants.rho = mvu(rhoval,'kg_eau/ L')';
     simulation.constants.n = n;
+    %
 end
