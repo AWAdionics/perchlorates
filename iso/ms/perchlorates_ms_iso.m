@@ -26,7 +26,7 @@ function perchlorates_ms_iso(casename)
         gamma = pitzer_ms_gamma(simulation,yc,ya,simulation.input.T(i)).value;
         gamma = mvu(gamma,'');
         raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(i),gamma);
-        error = sulfates_mse(raw_error);
+        error = sulfates_mae(raw_error);
     end
 
     function [c, ceq] = constraint(input,i)
@@ -49,9 +49,9 @@ function perchlorates_ms_iso(casename)
     end
 
     options = optimoptions('fmincon', 'Display', 'iter', ...
-        'OutputFcn', @stop_func,'StepTolerance', 1e-9,'Algorithm', 'interior-point', ...
+        'OutputFcn', @stop_func,'StepTolerance', 1e-13,'Algorithm', 'interior-point', ...
         'MaxFunctionEvaluations',1000, ...
-        'OptimalityTolerance',1e-9);
+        'OptimalityTolerance',1e-13);
     lb = 0;
     cc_org = mvu([],'mmol/ L');
     for i=1:length(cc_ini)
@@ -65,7 +65,7 @@ function perchlorates_ms_iso(casename)
     ccs_aq = [cc_aq,simulation.input.aqeq.(cation)];
 
     mvu_scatter(ccs_aq,ccs_org,'Aqueous','Organic', ...
-        ['Isothermes',cation,'Monosels ',num2str(simulation.input.T.celsius.value(1)),' C'], ...
+        ['Isothermes ',cation,' Monosels ',num2str(simulation.input.T.celsius.value(1)),' C'], ...
         {'trial','truth'})
     %lim([0,150])
 end

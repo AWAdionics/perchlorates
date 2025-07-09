@@ -83,6 +83,7 @@ function simulation = perchlorates_ms_make(case_name)
     end
     
     n = length(values(:,i));
+    simulation.constants.n_pts = n;
     for i=1:length(cations)
         ion = cations{i};
         simulation.ions.M.(ion) = mavu(molar_mass.(ion).value+zeros(n,1),molar_mass.(ion).unit);
@@ -109,6 +110,33 @@ function simulation = perchlorates_ms_make(case_name)
     feed_a = [feed_a{:}]';
     %
 
+    %eqs (for kapp)
+    aqeq_c = cellfun(@(k) simulation.input.aqeq.(k),  ...
+                               {simulation.input.cation}, ...
+                               'UniformOutput', false);
+    aqeq_c = [aqeq_c{:}]';
+    aqeq_a = cellfun(@(k) simulation.input.aqeq.(k),  ...
+                              simulation.constants.anions, ...
+                              'UniformOutput', false);
+    aqeq_a = [aqeq_a{:}]';
+
+
+
+    orgeq_c = cellfun(@(k) simulation.input.orgeq.(k),  ...
+                               {simulation.input.cation}, ...
+                               'UniformOutput', false);
+    orgeq_c = [orgeq_c{:}]';
+    orgeq_a = cellfun(@(k) simulation.input.orgeq.(k),  ...
+                              simulation.constants.anions, ...
+                              'UniformOutput', false);
+    orgeq_a = [orgeq_a{:}]';
+
+    simulation.constants.aqeq_c = aqeq_c';
+    simulation.constants.aqeq_a = aqeq_a';
+    simulation.constants.orgeq_c = orgeq_c';
+    simulation.constants.orgeq_a = orgeq_a';
+    %
+
     %molar mass vectors
     cations_M = cellfun(@(k) simulation.ions.M.(k),  ...
                              {simulation.input.cation}, ...
@@ -120,7 +148,7 @@ function simulation = perchlorates_ms_make(case_name)
     anions_M = [anions_M{:}]';
 
 
-    n = length(simulation.input.ini.Li);
+    n = length(feed_c);
     rhoval = zeros(n,1);
     
     for i=1:n

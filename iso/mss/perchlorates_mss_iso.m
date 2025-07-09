@@ -20,12 +20,17 @@ function perchlorates_mss_iso(casename)
     cations = simulation.constants.cations_extracted;
     anions = simulation.constants.anions_extracted;
     rho = simulation.constants.rho;
-    OA = simulation.input.OA;
+    OA = simulation.constants.OA;
     zc = simulation.constants.zc;
     extracted_cations = 1:length(cations);
     extracted_anions = [1];
     fyc = perchlorates_ctoy(feed_aq_c,rho);
+    fyc = fyc.to(' mol/kg_eau');
     fya = perchlorates_ctoy(feed_aq_a,rho);
+    fya = fya.to(' mol/kg_eau');
+
+    gamma = pitzer_mss_gamma(simulation,fyc(:,1),fya(:,1),simulation.input.T(1), ...
+                                 extracted_cations,extracted_anions);
 
     function error = objective(input,i)
         cc = mvu(input,'mmol/ L');
@@ -38,8 +43,8 @@ function perchlorates_mss_iso(casename)
         fya(extracted_anions,i) = ya;
         gamma = pitzer_mss_gamma(simulation,fyc(:,i),fya(:,i),simulation.input.T(i), ...
                                  extracted_cations,extracted_anions);
-        raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(i),gamma);
-        error = sulfates_mse(raw_error);
+        raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(:,i),gamma);
+        error = sulfates_mae(raw_error);
     end
 
     function [c, ceq] = constraint(input,i)
@@ -63,25 +68,31 @@ function perchlorates_mss_iso(casename)
     end
 
     options = optimoptions('fmincon', 'Display', 'iter', ...
-        'OutputFcn', @stop_func,'StepTolerance', 1e-9,'Algorithm', 'interior-point', ...
+        'OutputFcn', @stop_func,'StepTolerance', 1e-13,'Algorithm', 'interior-point', ...
         'MaxFunctionEvaluations',1000, ...
-        'OptimalityTolerance',1e-9);
-    lb = 0;
+        'OptimalityTolerance',1e-13);
+    lb = [0,0,0];
     cc_org = mvu([],'mmol/ L');
     for i=1:length(feed_org_c(:,1))
-        input = feed_org_c(extracted_cations,i);
+        input = mvu([],'mmol/ L');
+        for j=1:length(cations)
+            cation = cations{j};
+            cat = simulation.input.orgeq.(cation);
+            input = [input;cat(i)];
+        end
+        %input = feed_org_c(extracted_cations,i);
         [x_opt, fval_opt] = fmincon(@(x) objective(x,i),input.value,...
             [],[], [], [], lb, [],@(x) constraint(x,i), options);
-        cc_org = [cc_org;mvu(x_opt,'mmol/ L')];
+        cc_org = [cc_org,mvu(x_opt,'mmol/ L')];
     end
-    cc_aq = perchlorates_ceq_aq(cc_org,feed_aq_c,OA);
+    cc_aq = perchlorates_ceq_aq(cc_org,feed_aq_c(extracted_cations,:),OA);
     ca_org = perchlorates_cclo4_eq_org(zc,cc_org);
     ca_aq = perchlorates_ceq_aq(ca_org,feed_aq_a,OA);
     
     for i=1:length(cations)
         ion = cations{i};
-        ccs_org = [cc_org(i,:),simulation.input.orgeq.(ion)];
-        ccs_aq = [cc_aq(i,:),simulation.input.aqeq.(ion)];
+        ccs_org = [cc_org(i,:)',simulation.input.orgeq.(ion)];
+        ccs_aq = [cc_aq(i,:)',simulation.input.aqeq.(ion)];
     
         mvu_scatter(ccs_aq,ccs_org,'Aqueous','Organic', ...
             ['Isothermes ',ion,' Multisels ',num2str(simulation.input.T.celsius.value(1)),' C'], ...
@@ -90,8 +101,8 @@ function perchlorates_mss_iso(casename)
 
     for i=1:length(anions)
         ion = anions{i};
-        cas_org = [ca_org(i,:),simulation.input.orgeq.(ion)];
-        cas_aq = [ca_aq(i,:),simulation.input.aqeq.(ion)];
+        cas_org = [ca_org(i,:)',simulation.input.orgeq.(ion)];
+        cas_aq = [ca_aq(i,:)',simulation.input.aqeq.(ion)];
     
         mvu_scatter(cas_aq,cas_org,'Aqueous','Organic', ...
             ['Isothermes ',ion,' Multisels ',num2str(simulation.input.T.celsius.value(1)),' C'], ...

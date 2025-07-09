@@ -97,6 +97,7 @@ function simulation = perchlorates_mss_make(case_name)
     simulation.constants.anions = anions;
     simulation.constants.cations_extracted = cations_extracted;
     simulation.constants.anions_extracted = anions_extracted;
+    simulation.constants.OA = simulation.input.OA';
     
     %charge vector
     zcs = mvu([],'');
@@ -110,7 +111,7 @@ function simulation = perchlorates_mss_make(case_name)
     simulation.constants.Kapp = mvu([],'');
     for i=1:length(cations_extracted)
         ion = cations{i};
-        simulation.constants.Kapp = [simulation.constants.Kapp,simulation.input.Kapps.(ion)];
+        simulation.constants.Kapp = [simulation.constants.Kapp;simulation.input.Kapps.(ion)'];
     end
     
     %pitzer model
