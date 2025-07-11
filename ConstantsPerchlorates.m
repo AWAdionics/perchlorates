@@ -12,7 +12,7 @@ classdef ConstantsPerchlorates
         Vmix = mvu(1.7e-4,' m^3')
         ak_ext = mvu(1.8e-2,'/ s')
         ak_rege = mvu(2*2.18,'/ s') %2.4222*1.8e-2 is more likely
-        c_exctot = mvu(53,'mmol/ L')
+        c_exctot = mvu(50,'mmol/ L')
 
         %Process only
         TKapp1 = mvu(20,' C')

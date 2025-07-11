@@ -15,6 +15,7 @@ function perchlorates_mss_iso(casename)
     Kapp = simulation.constants.Kapp;
     feed_aq_c = simulation.constants.feed_aq_c.to('mmol/ L');
     feed_aq_a = simulation.constants.feed_aq_a.to('mmol/ L');
+    
     feed_org_c = simulation.constants.feed_org_c.to('mmol/ L');
     feed_org_a = simulation.constants.feed_org_a.to('mmol/ L');
     cations = simulation.constants.cations_extracted;
@@ -25,9 +26,9 @@ function perchlorates_mss_iso(casename)
     extracted_cations = 1:length(cations);
     extracted_anions = [1];
     fyc = perchlorates_ctoy(feed_aq_c,rho);
-    fyc = fyc.to(' mol/kg_eau');
+    fyc = fyc.to('mmol/kg_eau');
     fya = perchlorates_ctoy(feed_aq_a,rho);
-    fya = fya.to(' mol/kg_eau');
+    fya = fya.to('mmol/kg_eau');
 
     gamma = pitzer_mss_gamma(simulation,fyc(:,1),fya(:,1),simulation.input.T(1), ...
                                  extracted_cations,extracted_anions);
@@ -36,9 +37,11 @@ function perchlorates_mss_iso(casename)
         cc = mvu(input,'mmol/ L');
         ca = perchlorates_cclo4_eq_org(zc,cc);
         yc = perchlorates_ctoy(perchlorates_ceq_aq( ...
-            cc,feed_aq_c(extracted_cations,i),OA(i)),rho(i));
+            cc,feed_aq_c(extracted_cations,i),feed_org_c(extracted_cations,i),OA(i)),rho(i));
+        t = perchlorates_ceq_aq( ...
+            ca,feed_aq_a(extracted_anions,i),feed_org_a(extracted_anions,i),OA(i))
         ya = perchlorates_ctoy(perchlorates_ceq_aq( ...
-            ca,feed_aq_a(extracted_anions,i),OA(i)),rho(i));
+            ca,feed_aq_a(extracted_anions,i),feed_org_a(extracted_anions,i),OA(i)),rho(i));
         fyc(extracted_cations,i) = yc;
         fya(extracted_anions,i) = ya;
         gamma = pitzer_mss_gamma(simulation,fyc(:,i),fya(:,i),simulation.input.T(i), ...
@@ -49,9 +52,12 @@ function perchlorates_mss_iso(casename)
 
     function [c, ceq] = constraint(input,i)
         cc = mvu(input,'mmol/ L');
-        yc = perchlorates_ctoy(perchlorates_ceq_aq( ...
-            cc,feed_aq_c(extracted_cations,i),OA(i)),rho(i));
-        c = -[input,yc.value];     % Enforces: x > 0 ⇒ -x < 0
+        ca = perchlorates_cclo4_eq_org(zc,cc);
+        cac = perchlorates_ceq_aq(cc,feed_aq_c(extracted_cations,i), ...
+            feed_org_c(extracted_cations,i),OA(i));
+        caa = perchlorates_ceq_aq(ca,feed_aq_a(extracted_anions,i), ...
+            feed_org_a(extracted_anions,i),OA(i));
+        c = -[cc.value,ca.value,cac.value,caa.value];     % Enforces: x > 0 ⇒ -x < 0
         ceq = [];   % No equality constraints
     end
 
@@ -85,9 +91,9 @@ function perchlorates_mss_iso(casename)
             [],[], [], [], lb, [],@(x) constraint(x,i), options);
         cc_org = [cc_org,mvu(x_opt,'mmol/ L')];
     end
-    cc_aq = perchlorates_ceq_aq(cc_org,feed_aq_c(extracted_cations,:),OA);
+    cc_aq = perchlorates_ceq_aq(cc_org,feed_aq_c(extracted_cations,:),feed_org_c(extracted_cations,:),OA);
     ca_org = perchlorates_cclo4_eq_org(zc,cc_org);
-    ca_aq = perchlorates_ceq_aq(ca_org,feed_aq_a,OA);
+    ca_aq = perchlorates_ceq_aq(ca_org,feed_aq_a(extracted_anions,:),feed_org_a(extracted_anions,:),OA);
     
     for i=1:length(cations)
         ion = cations{i};

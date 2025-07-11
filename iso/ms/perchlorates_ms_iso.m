@@ -13,7 +13,9 @@ function perchlorates_ms_iso(casename)
     cation = simulation.input.cation;
     anion = simulation.input.anion;
     cc_ini = simulation.input.ini.(cation);
+    cc_org_ini = cc_ini*mvu(0,'');
     ca_ini = simulation.input.ini.(anion);
+    ca_org_ini = ca_ini*mvu(0,'');
     rho = simulation.constants.rho;
     OA = mvu(1,'');
     zc = mvu(ConstantsPitzer.charges.(cation),'');
@@ -21,8 +23,8 @@ function perchlorates_ms_iso(casename)
     function error = objective(input,i)
         cc = mvu(input,'mmol/ L');
         ca = perchlorates_cclo4_eq_org(zc,cc);
-        yc = perchlorates_ctoy(perchlorates_ceq_aq(cc,cc_ini(i),OA),rho(i));
-        ya = perchlorates_ctoy(perchlorates_ceq_aq(ca,ca_ini(i),OA),rho(i));
+        yc = perchlorates_ctoy(perchlorates_ceq_aq(cc,cc_ini(i),cc_org_ini(i),OA),rho(i));
+        ya = perchlorates_ctoy(perchlorates_ceq_aq(ca,ca_ini(i),ca_org_ini(i),OA),rho(i));
         gamma = pitzer_ms_gamma(simulation,yc,ya,simulation.input.T(i)).value;
         gamma = mvu(gamma,'');
         raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(i),gamma);
@@ -31,8 +33,10 @@ function perchlorates_ms_iso(casename)
 
     function [c, ceq] = constraint(input,i)
         cc = mvu(input,'mmol/ L');
-        yc = perchlorates_ctoy(perchlorates_ceq_aq(cc,cc_ini(i),OA),rho(i));
-        c = -[input,yc.value];     % Enforces: x > 0 ⇒ -x < 0
+        ca = perchlorates_cclo4_eq_org(zc,cc);
+        cac = perchlorates_ceq_aq(cc,cc_ini(i),cc_org_ini(i),OA);
+        caa = perchlorates_ceq_aq(ca,ca_ini(i),ca_org_ini(i),OA);
+        c = -[cc.value,ca.value,cac.value,caa.value];     % Enforces: x > 0 ⇒ -x < 0
         ceq = [];   % No equality constraints
     end
 
@@ -59,7 +63,7 @@ function perchlorates_ms_iso(casename)
             [],[], [], [], lb, [],@(x) constraint(x,i), options);
         cc_org = [cc_org;mvu(x_opt,'mmol/ L')];
     end
-    cc_aq = perchlorates_ceq_aq(cc_org,cc_ini,OA);
+    cc_aq = perchlorates_ceq_aq(cc_org,cc_ini,cc_org_ini,OA);
 
     ccs_org = [cc_org,simulation.input.orgeq.(cation)];
     ccs_aq = [cc_aq,simulation.input.aqeq.(cation)];

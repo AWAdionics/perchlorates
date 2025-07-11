@@ -56,7 +56,7 @@ classdef TestPerchloratesCommon < matlab.unittest.TestCase
             cc = mvu([50;100],'mmol/ L');
             trial = perchlorates_org_eq(cc,yc,ya,zc,Kapps,gammas);
             lhs_mult =1 +(1/36+1/64);
-            truth = mvu([lhs_mult*50-150/36;lhs_mult*100-150/64],'mmol/ L');
+            truth = mvu([lhs_mult*50-50/36;lhs_mult*100-50/64],'mmol/ L');
             testCase.verifyEqual(trial,truth)
         end
 
@@ -64,8 +64,9 @@ classdef TestPerchloratesCommon < matlab.unittest.TestCase
             c_org_eq = mvu([1,2],'mmol/ L');
             OA = mvu([3,4],'');
             c_aq_ini = mvu([5,6],'mmol/ L');
-            trial = perchlorates_ceq_aq(c_org_eq,c_aq_ini,OA);
-            truth = mvu([2,-2],'mmol/ L');
+            c_org_ini = mvu([0,1],'mmol/ L');
+            trial = perchlorates_ceq_aq(c_org_eq,c_aq_ini,c_org_ini,OA);
+            truth = mvu([2,2],'mmol/ L');
             testCase.verifyEqual(trial,truth)
         end
     end
