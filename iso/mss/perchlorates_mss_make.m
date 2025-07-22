@@ -43,7 +43,7 @@ function simulation = perchlorates_mss_make(case_name)
 
     name_row = perchlorates_excel_read(excel_name,'Data',[1],[1:max_col],false);
     unit_row = perchlorates_excel_read(excel_name,'Data',[2],[1:max_col],false);
-    values = perchlorates_excel_read(excel_name,'Data',[3:max_row],[1:max_col]);
+    values = perchlorates_excel_read(excel_name,'Data',[3:max_row],[1:max_col],true);
 
     for i=1:length(name_row)
         switch true 
@@ -138,6 +138,28 @@ function simulation = perchlorates_mss_make(case_name)
                               'UniformOutput', false);
     feed_org_a = [feed_org_a{:}]';
     simulation.constants.feed_org_a = feed_org_a;
+    %equlibriums
+    aqeq_c = cellfun(@(k) simulation.input.aqeq.(k),  ...
+                               simulation.constants.cations, ...
+                               'UniformOutput', false);
+    aqeq_c = [aqeq_c{:}]';
+    simulation.constants.aqeq_c = aqeq_c;
+    aqeq_a = cellfun(@(k) simulation.input.aqeq.(k),  ...
+                              simulation.constants.anions, ...
+                              'UniformOutput', false);
+    aqeq_a = [aqeq_a{:}]';
+    simulation.constants.aqeq_a = aqeq_a;
+    orgeq_c = cellfun(@(k) simulation.input.orgeq.(k),  ...
+                               simulation.constants.cations, ...
+                               'UniformOutput', false);
+    orgeq_c = [orgeq_c{:}]';
+    simulation.constants.orgeq_c = orgeq_c;
+    orgeq_a = cellfun(@(k) simulation.input.orgeq.(k),  ...
+                              simulation.constants.anions, ...
+                              'UniformOutput', false);
+    orgeq_a = [orgeq_a{:}]';
+    simulation.constants.orgeq_a = orgeq_a;
+
     
 
     %molar mass vectors

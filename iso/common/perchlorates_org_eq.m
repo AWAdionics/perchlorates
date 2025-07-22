@@ -16,8 +16,10 @@ function error = perchlorates_org_eq(cc_org_eq,yc_aq_eq,ya_aq_eq,zc,Kapps,gammas
     end
     y0 = ConstantsPerchlorates.y0;
     c_exctot = ConstantsPerchlorates.c_exctot;
+    %at = gammas.^(zc+one).*yc_aq_eq./y0.*(ya_aq_eq./y0).^zc
     kapp_term = Kapps.*gammas.^(zc+one).*yc_aq_eq./y0.*(ya_aq_eq./y0).^zc;
-    LHS = cc_org_eq*(one+sum(kapp_term));
+    LHS = cc_org_eq.*(one+sum(kapp_term));
     RHS = c_exctot.*kapp_term;
+    %tri = kapp_term/(one+sum(kapp_term))*c_exctot;
     error = LHS-RHS;
 end

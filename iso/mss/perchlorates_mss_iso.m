@@ -38,8 +38,6 @@ function perchlorates_mss_iso(casename)
         ca = perchlorates_cclo4_eq_org(zc,cc);
         yc = perchlorates_ctoy(perchlorates_ceq_aq( ...
             cc,feed_aq_c(extracted_cations,i),feed_org_c(extracted_cations,i),OA(i)),rho(i));
-        t = perchlorates_ceq_aq( ...
-            ca,feed_aq_a(extracted_anions,i),feed_org_a(extracted_anions,i),OA(i))
         ya = perchlorates_ctoy(perchlorates_ceq_aq( ...
             ca,feed_aq_a(extracted_anions,i),feed_org_a(extracted_anions,i),OA(i)),rho(i));
         fyc(extracted_cations,i) = yc;
@@ -47,7 +45,7 @@ function perchlorates_mss_iso(casename)
         gamma = pitzer_mss_gamma(simulation,fyc(:,i),fya(:,i),simulation.input.T(i), ...
                                  extracted_cations,extracted_anions);
         raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(:,i),gamma);
-        error = sulfates_mae(raw_error);
+        error = sqrt(sulfates_mse(raw_error));
     end
 
     function [c, ceq] = constraint(input,i)
@@ -57,7 +55,7 @@ function perchlorates_mss_iso(casename)
             feed_org_c(extracted_cations,i),OA(i));
         caa = perchlorates_ceq_aq(ca,feed_aq_a(extracted_anions,i), ...
             feed_org_a(extracted_anions,i),OA(i));
-        c = -[cc.value,ca.value,cac.value,caa.value];     % Enforces: x > 0 ⇒ -x < 0
+        c = -[cc.value',ca.value,cac.value',caa.value];     % Enforces: x > 0 ⇒ -x < 0
         ceq = [];   % No equality constraints
     end
 
@@ -74,9 +72,9 @@ function perchlorates_mss_iso(casename)
     end
 
     options = optimoptions('fmincon', 'Display', 'iter', ...
-        'OutputFcn', @stop_func,'StepTolerance', 1e-13,'Algorithm', 'interior-point', ...
+        'OutputFcn', @stop_func,'StepTolerance', 1e-16,'Algorithm', 'interior-point', ...
         'MaxFunctionEvaluations',1000, ...
-        'OptimalityTolerance',1e-13);
+        'OptimalityTolerance',1e-16);
     lb = [0,0,0];
     cc_org = mvu([],'mmol/ L');
     for i=1:length(feed_org_c(:,1))
@@ -103,16 +101,55 @@ function perchlorates_mss_iso(casename)
         mvu_scatter(ccs_aq,ccs_org,'Aqueous','Organic', ...
             ['Isothermes ',ion,' Multisels ',num2str(simulation.input.T.celsius.value(1)),' C'], ...
             {'trial','truth'})
+
+        if num2str(simulation.input.T.celsius.value(1)) <= 60
+            switch ion
+                case 'Li'
+                   ylim([0 50]);
+                   xlim([0 50]);
+                case 'Ca'
+                   ylim([0 50]);
+                   xlim([0 6]);
+                case 'Mg'
+                   ylim([0 50]);
+                   %xlim([1100 1300]);
+            end
+        else
+             switch ion
+                case 'Li'
+                   %ylim([0 40]);
+                   %xlim([0 50]);
+                case 'Ca'
+                   %ylim([0 40]);
+                   %xlim([0 6]);
+                case 'Mg'
+                   %ylim([0 40]);
+                   %xlim([0 300]);
+             end
+        end
     end
 
     for i=1:length(anions)
         ion = anions{i};
         cas_org = [ca_org(i,:)',simulation.input.orgeq.(ion)];
         cas_aq = [ca_aq(i,:)',simulation.input.aqeq.(ion)];
-    
         mvu_scatter(cas_aq,cas_org,'Aqueous','Organic', ...
             ['Isothermes ',ion,' Multisels ',num2str(simulation.input.T.celsius.value(1)),' C'], ...
             {'trial','truth'})
+
+        if num2str(simulation.input.T.celsius.value(1)) <= 60
+            switch ion
+                case 'ClO4'
+                   ylim([0 100]);
+                   xlim([0 50]);
+            end
+        else
+             switch ion
+                case 'ClO4'
+                   %ylim([0 90]);
+                   %xlim([0 500]);
+             end
+        end
     end
     %lim([0,150])
 end
