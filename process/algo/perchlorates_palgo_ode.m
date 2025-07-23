@@ -1,6 +1,6 @@
 function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted] = ...
-                    perchlorates_p_ode(simulation,step_size,end_time)
-    %sulfates_p_ode given a simulation input solves ODE and returns stable state
+                    perchlorates_palgo_ode(simulation,step_size,end_time)
+    %perchlorates_palgo_ode given a simulation input solves ODE and returns stable state
     %
     % Best aks found (02/07/2025):
     % ext = 1,04e-2 

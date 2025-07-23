@@ -1,4 +1,4 @@
-function [Kapps, err] = perchlorates_mss_kapp(casename)
+function [Kapps, err] = perchlorates_mss_kapps(casename)
     %perchlorates_ms_iso given a casename runs and displays the simulated isotherme vs the experimental one
     %
     % to do so it minimizes sulfates_exa_eq_eq and then plots the solutions 
@@ -29,10 +29,9 @@ function [Kapps, err] = perchlorates_mss_kapp(casename)
                                         extracted_anions)];
     end
 
-    function error = objective(input)
+    function error = objective(input,j)
         Kapps = mvu(input,'');
         error = 0;
-        j=0;
         if j == 0
             for i=1:length(simulation.input.T)
                 raw_error = perchlorates_org_eq(cc(extracted_cations,i), ...
@@ -62,13 +61,16 @@ function [Kapps, err] = perchlorates_mss_kapp(casename)
     end
 
     options = optimoptions('fmincon', 'Display', 'iter', ...
-        'OutputFcn', @stop_func,'StepTolerance',1e-13,'Algorithm', 'interior-point', ...
+        'OutputFcn', @stop_func,'StepTolerance',1e-13,'Algorithm', 'active-set', ...
         'MaxFunctionEvaluations',1000, ...
         'OptimalityTolerance',1e-13,...
         'FunctionTolerance',1e-13);
     lb = [0,0,0];
-    
-    [kapp, err] = fmincon(@(x) objective(x),Kapp.value(:,1),...
+    kapps = [];
+    for j = 1:length(simulation.input.T)
+        [kapp, err] = fmincon(@(x) objective(x,j),Kapp.value(:,1),...
                 [],[], [], [], lb, [],[], options);
-    Kapps = mvu(kapp,'');
+        kapps = [kapps,kapp];
+    end
+    Kapps = mvu(kapps,'');
 end

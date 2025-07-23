@@ -45,7 +45,7 @@ function perchlorates_mss_iso(casename)
         gamma = pitzer_mss_gamma(simulation,fyc(:,i),fya(:,i),simulation.input.T(i), ...
                                  extracted_cations,extracted_anions);
         raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(:,i),gamma);
-        error = sqrt(sulfates_mse(raw_error));
+        error = sulfates_mae(raw_error);
     end
 
     function [c, ceq] = constraint(input,i)
@@ -102,8 +102,20 @@ function perchlorates_mss_iso(casename)
             ['Isothermes ',ion,' Multisels ',num2str(simulation.input.T.celsius.value(1)),' C'], ...
             {'trial','truth'})
 
-        if num2str(simulation.input.T.celsius.value(1)) <= 60
+        if simulation.input.T.celsius.value(1) <= 60
             switch ion
+                case 'Li'
+                   ylim([0 50]);
+                   xlim([40 49]);
+                case 'Ca'
+                   ylim([0 50]);
+                   xlim([3 5.5]);
+                case 'Mg'
+                   ylim([0 50]);
+                   xlim([1000 1250]);
+            end
+        else
+             switch ion
                 case 'Li'
                    ylim([0 50]);
                    xlim([0 50]);
@@ -112,19 +124,7 @@ function perchlorates_mss_iso(casename)
                    xlim([0 6]);
                 case 'Mg'
                    ylim([0 50]);
-                   %xlim([1100 1300]);
-            end
-        else
-             switch ion
-                case 'Li'
-                   %ylim([0 40]);
-                   %xlim([0 50]);
-                case 'Ca'
-                   %ylim([0 40]);
-                   %xlim([0 6]);
-                case 'Mg'
-                   %ylim([0 40]);
-                   %xlim([0 300]);
+                   xlim([0 300]);
              end
         end
     end
@@ -137,7 +137,7 @@ function perchlorates_mss_iso(casename)
             ['Isothermes ',ion,' Multisels ',num2str(simulation.input.T.celsius.value(1)),' C'], ...
             {'trial','truth'})
 
-        if num2str(simulation.input.T.celsius.value(1)) <= 60
+        if simulation.input.T.celsius.value(1) <= 60
             switch ion
                 case 'ClO4'
                    ylim([0 100]);
@@ -146,8 +146,8 @@ function perchlorates_mss_iso(casename)
         else
              switch ion
                 case 'ClO4'
-                   %ylim([0 90]);
-                   %xlim([0 500]);
+                   ylim([0 100]);
+                   xlim([0 800]);
              end
         end
     end

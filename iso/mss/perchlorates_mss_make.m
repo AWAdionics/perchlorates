@@ -56,9 +56,9 @@ function simulation = perchlorates_mss_make(case_name)
             case endsWith(name_row{i},orgini_name)
                 %initializing at org
                 ion = erase(name_row{i}, orgini_name);
-                simulation.input.aqini.(ion) = mvu(values(:,i),unit_row{i});
+                simulation.input.orgini.(ion) = mvu(values(:,i),unit_row{i});
                 %if initializng at org, ini aq is 0
-                simulation.input.orgini.(ion) = mvu(0*values(:,i),unit_row{i});
+                simulation.input.aqini.(ion) = mvu(0*values(:,i),unit_row{i});
             case endsWith(name_row{i},aqeq_name)
                 %equilibrium
                 ion = erase(name_row{i}, aqeq_name);

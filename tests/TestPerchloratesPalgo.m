@@ -160,5 +160,11 @@ classdef TestPerchloratesPalgo < matlab.unittest.TestCase
             truth = mvu(blkdiag(one_mat,one_mat,one_mat,one_mat),'/ s');
             testCase.verifyTrue(isalmostequal(trial,truth))
         end 
+
+        function perchlorates_p_pad(testCase)
+             trial = perchlorates_p_pad(mvu([1,2,3,4],' mol'),5,2);
+             truth = mvu([1,2,NaN,3,4],' mol');
+             testCase.verifyEqual(trial,truth)
+        end
     end
 end
