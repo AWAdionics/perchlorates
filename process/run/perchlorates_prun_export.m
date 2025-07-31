@@ -22,6 +22,8 @@ function perchlorates_prun_export(c_aq_cs,c_aq_as,c_org_cs,c_org_as,n_stages)
     
     %copy input into output
     perchlorates_excel_copy(input_name,input_sheet,'input',output_name,input_sheet,'output')
+    %clear old output results
+    perchlorates_excel_clearsheet('output', output_name,output_sheet)
 
     
     %Write names of each ion,phase and stage in top row

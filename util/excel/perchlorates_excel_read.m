@@ -59,7 +59,7 @@ function entry = perchlorates_excel_read(file_name, sheet_name, rows, cols, numb
     
     % Check if valid rows and cols are empty
     if isempty(valid_rows) || isempty(valid_cols)
-        error('No valid entries in the specified rows and columns.');
+        error('Excel:NoEntries','No valid entries in the specified rows and columns.');
     end
     
     % Get the value at the specified row and column

@@ -51,5 +51,31 @@ classdef TestPerchloratesUtil < matlab.unittest.TestCase
             testCase.verifyTrue(is_match)
         end
 
+        function test_excel_clearsheet(testCase)
+            % Setup test data
+            sheet_keep = 'Keep';
+            sheet_clear = 'Clear';
+            file_name = 'testclear.xlsx';
+            folder_name = 'output';
+
+            truth = [1,2,3,4,5,6;7,8,9,10,11,12;13,14,15,16,17,18];
+            perchlorates_excel_writematrix(truth,'A1',file_name,sheet_keep)
+            perchlorates_excel_writematrix(truth,'A1',file_name,sheet_clear)
+
+            % Call the clear function
+            perchlorates_excel_clearsheet(folder_name,file_name,sheet_clear)
+
+            % Verify cleared sheet is empty
+            function test(file_name,sheet_clear)
+               perchlorates_excel_read(file_name,sheet_clear,[1,2,3], [1,2,3,4,5,6],true,true);
+            end
+            %if not values, expect error
+            testCase.verifyError(@() test(file_name,sheet_clear), 'Excel:NoEntries')
+
+            % Verify other sheet still has original data
+            trial = perchlorates_excel_read(file_name,sheet_keep,[1,2,3], [1,2,3,4,5,6],true,true);
+            testCase.verifyEqual(trial, truth, 'Sheet2 was modified incorrectly.');
+        end
+
     end
 end

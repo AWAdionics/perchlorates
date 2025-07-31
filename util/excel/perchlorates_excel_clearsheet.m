@@ -1,9 +1,14 @@
-function perchlorates_excel_clearsheet(file_name, sheet_name)
+function perchlorates_excel_clearsheet(folder, file_name, sheet_name)
     % Clears all contents from a specific sheet in an Excel file
+    
+    % Get the path of the current function's file
+    functionDir = fileparts(mfilename('fullpath'));  % Get the directory of this function
+    % Define the relative path to the Excel file from the function directory
+    file_path = fullfile(functionDir, '..', '..', folder, 'excel', file_name);
 
     % Check file existence
-    if ~isfile(file_name)
-        error('File "%s" does not exist.', file_name);
+    if ~isfile(file_path)
+        error('File "%s" does not exist.', file_path);
     end
 
     % Start Excel COM server
@@ -12,13 +17,13 @@ function perchlorates_excel_clearsheet(file_name, sheet_name)
 
     try
         % Open the workbook
-        Workbook = Excel.Workbooks.Open(fullfile(pwd, file_name));
+        Workbook = Excel.Workbooks.Open(file_path);
         
         % Try to access the sheet
         try
             Sheet = Workbook.Sheets.Item(sheet_name);
         catch
-            error('Sheet "%s" not found in "%s".', sheet_name, file_name);
+            error('Sheet "%s" not found in "%s".', sheet_name, file_path);
         end
 
         % Clear the sheet's contents
@@ -30,7 +35,7 @@ function perchlorates_excel_clearsheet(file_name, sheet_name)
         Excel.Quit();
         delete(Excel);  % Release COM server
 
-        fprintf('Sheet "%s" cleared in file "%s".\n', sheet_name, file_name);
+        fprintf('Sheet "%s" cleared in file "%s".\n', sheet_name, file_path);
     catch ME
         Excel.Quit();
         delete(Excel);
