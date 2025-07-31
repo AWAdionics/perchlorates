@@ -85,10 +85,10 @@ function [real_mat,feed_vec,eq_mat] = perchlorates_palgo_daqdt_mat(simulation)
     rege_feed_c_is = [n_ext+1:n_ext+3:(nc-1)*(n_ext+3)+n_ext+1]; %iterates of regeneration input in feed vector for cations
     ext_feed_a_is  = [nc*(n_ext+3)+1:n_ext+3:nc*(n_ext+3)+(na-1)*(n_ext+3)+1]; %iterates of extraction input in feed vector for cations
     rege_feed_a_is = [nc*(n_ext+3)+n_ext+1:n_ext+3:nc*(n_ext+3)+(na-1)*(n_ext+3)+n_ext+1]; %iterates of regeneration input in feed vector for cations
-    ext_feed_c = simulation.input.ext_feed_c;
-    ext_feed_a = simulation.input.ext_feed_a;
-    rege_feed_c = simulation.input.rege_feed_c;
-    rege_feed_a = simulation.input.rege_feed_a;
+    ext_feed_c = simulation.constants.ext_feed_c(1:nc);
+    ext_feed_a = simulation.constants.ext_feed_a(1:na);
+    rege_feed_c = simulation.constants.rege_feed_c(1:nc);
+    rege_feed_a = simulation.constants.rege_feed_a(1:na);
 
     ext_OA = simulation.input.ext_OA;
     rege_OA = simulation.input.rege_OA;

@@ -15,7 +15,6 @@ function perchlorates_mss_iso(casename)
     Kapp = simulation.constants.Kapp;
     feed_aq_c = simulation.constants.feed_aq_c.to('mmol/ L');
     feed_aq_a = simulation.constants.feed_aq_a.to('mmol/ L');
-    
     feed_org_c = simulation.constants.feed_org_c.to('mmol/ L');
     feed_org_a = simulation.constants.feed_org_a.to('mmol/ L');
     cations = simulation.constants.cations_extracted;
@@ -118,7 +117,7 @@ function perchlorates_mss_iso(casename)
              switch ion
                 case 'Li'
                    ylim([0 50]);
-                   xlim([0 50]);
+                   xlim([0 120]);
                 case 'Ca'
                    ylim([0 50]);
                    xlim([0 6]);

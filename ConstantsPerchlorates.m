@@ -20,6 +20,6 @@ classdef ConstantsPerchlorates
         TKapp1 = mvu(40,' C')
         TKapp2 = mvu(80,' C')
         Kapp1 = mvu([40113,2342300,23581000],'')
-        Kapp2 = mvu([25.81038,53.56554,83.3374],'')
+        Kapp2 = mvu([17.20692,53.56554,33.33496],'')
     end
 end

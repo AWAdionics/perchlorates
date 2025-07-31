@@ -25,7 +25,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     
     %% %% Initinialization %% %%
     % Global Constants % 
-    times = 0:diag_step_size:end_time;
+    times = 0:step_size:end_time;
     %number of cations extracted
     n_c = length(simulation.constants.cations_extracted);
     %number of anions extracted
@@ -38,6 +38,11 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     n_tot = n_ext+3;
     %output units
     unit = simulation.input.output_unit;
+
+    ext_feed_c = simulation.constants.ext_feed_c;
+    ext_feed_a = simulation.constants.ext_feed_a;
+    rege_feed_c = simulation.constants.rege_feed_c;
+    rege_feed_a = simulation.constants.rege_feed_a;
     % %
 
     % Make matrices %
@@ -66,8 +71,8 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     
     % Initial Values of Equilibrium & State %
     %Initialize aqueous equilibrium to input feed for cations
-    c_aq_eq_c = [repmat(simulation.constants.ext_feed_aq_c,1,n_ext),...
-                 repmat(simulation.constants.rege_feed_aq_c,1,3)];
+    c_aq_eq_c = [repmat(ext_feed_c,1,n_ext),...
+                 repmat(rege_feed_c,1,3)];
     %Initialize organic equilibrium to input feed for cations
     c_org_eq_c = c_aq_eq_c*mvu(0,'');
     %Initialize aqueous to input feed for cations
@@ -75,8 +80,8 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     %Initialize organic to input feed for cations
     c_org_c = c_org_eq_c*mvu(0,'');
     %Initialize aqueous equilibrium to input feed for anions
-    c_aq_eq_a = [repmat(simulation.constants.ext_feed_aq_a,1,n_ext),...
-                 repmat(simulation.constants.rege_feed_aq_a,1,3)];
+    c_aq_eq_a = [repmat(ext_feed_a,1,n_ext),...
+                 repmat(rege_feed_a,1,3)];
     %Initialize organic equilibrium to input feed for anions
     c_org_eq_a = c_aq_eq_a*mvu(0,'');
     %Initialize aqueous to input feed for anions
@@ -85,7 +90,11 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     c_org_a = c_org_eq_a*mvu(0,'');
     %Optimization inputs
     %take first n_c or n_a columns of the inflow
-    x_ini = [c_aq_c(1:n_c,:),c_aq_a(1:n_a,:),c_org_c(1:n_c,:),c_org_a(1:n_a,:)];
+    A = [c_aq_c(1:n_c,:);c_aq_a(1:n_a,:)]';
+    B = [c_org_c(1:n_c,:);c_org_a(1:n_a,:)]';
+    a = A(:);
+    b = B(:);
+    x_ini = [a;b];
     %initialize matrices
     caq_extracted_mat = mavu(zeros(n_c+n_a,n_tot),unit); 
     corg_extracted_mat = mavu(zeros(n_c+n_a,n_tot),unit); 
@@ -103,18 +112,18 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
         %cations
         c_aq_c(1:n_c,:) = caq_extracted_mat(1:n_c,:);
         %anions
-        c_aq_a(n_c+1:n_c+n_a,:) = caq_extracted_mat(n_c+1:n_c+n_a,:);
+        c_aq_a(1:n_a,:) = caq_extracted_mat(n_c+1:n_c+n_a,:);
         % %
         
         % org %
-        corg_extracted_vec = x_in(n_i*n_tot+1:(n_c+n_a)*n_tot);
+        corg_extracted_vec = x_in(n_i*n_tot+1:2*n_i*n_tot);
         corg_extracted_mat = perchlorates_palgo_cvecmat(corg_extracted_mat, ...
-                                                       corg_extracted_vec, ...
-                                                       is,js);
+                                                        corg_extracted_vec, ...
+                                                        is,js);
         %cations
         c_org_c(1:n_c,:) = corg_extracted_mat(1:n_c,:);
         %anions
-        c_org_a(n_c+1:n_c+n_a,:) = corg_extracted_mat(n_c+1:n_c+n_a,:);
+        c_org_a(1:n_a,:) = corg_extracted_mat(n_c+1:n_c+n_a,:);
         % %
         % %  % %
     end
@@ -123,10 +132,10 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     %% %% Function  %% %%
     function dxdt = ddt_func(t,x_in)
         %input must be greater than 0, cut off when below 0.
-        x_in = mavu(max(x_in,0),unit);
+        c_extracted_vec = mavu(max(x_in,0),unit);
 
         % updates c_aq_c,c_aq_a,c_org_c,c_org_a
-        state_update(x_in);
+        state_update(c_extracted_vec);
         
         
         % % Compute equilibriums % %
@@ -134,14 +143,26 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
             perchlorates_palgo_eq(c_aq_eq_c,c_org_eq_c,c_aq_eq_a,c_org_eq_a, ...
                                   c_aq_c,c_aq_a,c_org_c,c_org_a,...
                                   simulation);
+        
         % %  % %
 
         % % Compute ODE % %
         %convert vector
-        caq_extracted_vec_eq = [c_aq_eq_c(1:n_c,:),c_aq_eq_a(1:n_a,:),...
-                                c_org_eq_c(1:n_c,:),c_org_eq_a(1:n_a,:)];
+        caq_eq_mat = [c_aq_eq_c(1:n_c,:);c_aq_eq_a(1:n_a,:)];
+        caq_extracted_vec_eq = c_extracted_vec(1:n_i*n_tot);
+        caq_extracted_vec_eq = perchlorates_palgo_cmatvec(caq_eq_mat, ...
+                                                       caq_extracted_vec_eq, ...
+                                                       is,js);
+
+        corg_eq_mat = [c_org_eq_c(1:n_c,:);c_org_eq_a(1:n_a,:)];
+        corg_extracted_vec_eq = c_extracted_vec(n_i*n_tot+1:2*n_i*n_tot);
+        corg_extracted_vec_eq = perchlorates_palgo_cmatvec(corg_eq_mat, ...
+                                                       corg_extracted_vec_eq, ...
+                                                       is,js);
+        c_extracted_vec_eq = [caq_extracted_vec_eq;corg_extracted_vec_eq];
+
         %compute dxdt
-        dxdt = rmat*caq_extracted_vec + eqmat*caq_extracted_vec_eq' + vec;
+        dxdt = rmat*c_extracted_vec + eqmat*c_extracted_vec_eq + vec;
         dxdt = dxdt.value;
         % %  % %
     end
@@ -156,9 +177,9 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     [t,x_out] = ode89(@(t,x) ddt_func(t,x),times,x_ini.value,options);
     %% %%  %% %%
     
-    state_update(x_out) 
+    state_update(mavu(max(x_out(end,:),0),unit)) 
     c_aq_c_extracted = c_aq_c(1:n_c,:);
-    c_aq_a_extracted = c_aq_a(n_c+1:n_c+n_a,:);
+    c_aq_a_extracted = c_aq_a(1:n_a,:);
     c_org_c_extracted = c_org_c(1:n_c,:);
-    c_org_a_extracted = c_org_a(n_c+1:n_c+n_a,:);
+    c_org_a_extracted = c_org_a(1:n_a,:);
 end

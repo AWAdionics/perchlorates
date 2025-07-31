@@ -13,7 +13,7 @@ function perchlorates_prun_export(c_aq_cs,c_aq_as,c_org_cs,c_org_as,n_stages)
     output_sheet = NamesPrunPerchlorates.output_sheet;
     cations = ConstantsPerchlorates.cations_extracted;
     n_c = length(cations);
-    anions = ConstantsPerchlorates.annions_extracted;
+    anions = ConstantsPerchlorates.anions_extracted;
     n_a = length(anions);
     
     %kill the below
@@ -68,7 +68,7 @@ function perchlorates_prun_export(c_aq_cs,c_aq_as,c_org_cs,c_org_as,n_stages)
 
     %Write output unit in second row
     output_unit = NamesPrunPerchlorates.output_unit;
-    unit_names = repmat({output_unit}, 1, n_stages*4);
+    unit_names = repmat({output_unit}, 1, n_stages*2*(n_c+n_a));
     perchlorates_excel_writechar(unit_names, cell2s,output_name,output_sheet)
 
     %Convert results to appropriate units c_aq_cs,c_aq_as,c_org_cs,c_org_as

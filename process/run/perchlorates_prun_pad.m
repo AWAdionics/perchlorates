@@ -40,22 +40,22 @@ function out = perchlorates_prun_pad(vec, n, k)
     end
 
     % Calculate how many NaNs to insert
-    numNaNs = n - length(vec);
+    numNaNs = n - size(vec,2);
     
     % If nothing to insert, just return vec
     if numNaNs <= 0
-        out = vec(1:n);
+        out = vec;
         return;
     end
     
     %make nans
-    nanvec = nan(1, numNaNs);
+    nanvec = nan(size(vec,1), numNaNs);
     if isa(vec,'MatrixValueUnit')
         nanvec = mavu(nanvec,vec.unit);
     end
 
     % Split and insert
-    a = vec(1:k);
-    b = vec(k+1:length(vec));
+    a = vec(:,1:k);
+    b = vec(:,k+1:length(vec));
     out = [a, nanvec,b];
 end

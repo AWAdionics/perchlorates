@@ -27,12 +27,21 @@ function [c_aq_c_ends,c_aq_a_ends,c_org_c_ends,c_org_a_ends,n] = perchlorates_pr
     end
     n=n+3;
     for i =1:length(simulations)
+        simulation = simulations(i);
         [c_aq_c_end,c_aq_a_end,c_org_c_end,c_org_a_end] = ...
                     perchlorates_palgo_ode(simulation,step_size,end_time);
         k = simulations(i).input.n_ext;
-        c_aq_c_ends = [c_aq_c_ends;perchlorates_prun_pad(c_aq_c_end,n,k)];
-        c_aq_a_ends = [c_aq_a_ends;perchlorates_prun_pad(c_aq_a_end,n,k)];
-        c_org_c_ends = [c_org_c_ends;perchlorates_prun_pad(c_org_c_end,n,k)];
-        c_org_a_ends = [c_org_a_ends;perchlorates_prun_pad(c_org_a_end,n,k)];
+
+        %Pad with Nans for extra columns
+        c_aq_c_end = perchlorates_prun_pad(c_aq_c_end,n,k);
+        c_aq_a_end = perchlorates_prun_pad(c_aq_a_end,n,k);
+        c_org_c_end = perchlorates_prun_pad(c_org_c_end,n,k);
+        c_org_a_end = perchlorates_prun_pad(c_org_a_end,n,k);
+        
+        %save
+        c_aq_c_ends = [c_aq_c_ends;c_aq_c_end(:)'];
+        c_aq_a_ends = [c_aq_a_ends;c_aq_a_end(:)'];
+        c_org_c_ends = [c_org_c_ends;c_org_c_end(:)'];
+        c_org_a_ends = [c_org_a_ends;c_org_a_end(:)'];
     end
 end

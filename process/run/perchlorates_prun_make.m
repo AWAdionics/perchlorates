@@ -128,7 +128,7 @@ function simulations = perchlorates_prun_make(lines)
         %%
 
         %% Now compute constants (which do not change in 1 simulation) %%
-        n = length(values(:,i));
+        n = 1;
         % O/A %
         simulation.constants.OA = [repmat(simulation.input.ext_OA,n_ext,1);
                                repmat(simulation.input.rege_OA,3,1)];
@@ -154,7 +154,7 @@ function simulations = perchlorates_prun_make(lines)
                                   simulation.constants.anions, ...
                                   'UniformOutput', false);
         rege_feed_aq_a = [rege_feed_aq_a{:}]';
-    
+        
         %molar masses struct
         for i=1:length(simulation.constants.cations)
             ion = simulation.constants.cations{i};
@@ -177,29 +177,29 @@ function simulations = perchlorates_prun_make(lines)
         anions_M = [anions_M{:}]';
         
         %put into simulation
-        simulation.constants.ext_feed_aq_c = ext_feed_aq_c;
-        simulation.constants.ext_feed_aq_a = ext_feed_aq_a;
-        simulation.constants.rege_feed_aq_c = rege_feed_aq_c;
-        simulation.constants.rege_feed_aq_a = rege_feed_aq_a;
+        simulation.constants.ext_feed_c = ext_feed_aq_c;
+        simulation.constants.ext_feed_a = ext_feed_aq_a;
+        simulation.constants.rege_feed_c = rege_feed_aq_c;
+        simulation.constants.rege_feed_a = rege_feed_aq_a;
         simulation.constants.cations_M = cations_M;
         simulation.constants.anions_M = anions_M;
         
         %compute rho
         ext_rho = sulfates_density( ...
-                               simulation.input.ext_brinemass(i), ... 
-                               ext_feed_aq_c(:,i), ...
-                               ext_feed_aq_a(:,i), ...
-                               cations_M(:,i), ...
-                               anions_M(:,i));
+                               simulation.input.ext_brinemass, ... 
+                               ext_feed_aq_c, ...
+                               ext_feed_aq_a, ...
+                               cations_M, ...
+                               anions_M);
         rege_rho = sulfates_density( ...
-                               simulation.input.rege_brinemass(i), ... 
-                               ext_feed_aq_c(:,i), ...
-                               ext_feed_aq_a(:,i), ...
-                               cations_M(:,i), ...
-                               anions_M(:,i));
+                               simulation.input.rege_brinemass, ... 
+                               ext_feed_aq_c, ...
+                               ext_feed_aq_a, ...
+                               cations_M, ...
+                               anions_M);
 
         rho = [repmat(ext_rho,n_ext,1);repmat(rege_rho,3,1)];
-        simulation.constants.rho = rho;
+        simulation.constants.rho = rho';
         % %
 
         % Construct Temperatures %
@@ -209,13 +209,13 @@ function simulations = perchlorates_prun_make(lines)
         % %
 
         % Construct Kapp %
-        Kapp1 = ConstantsSulfates.Kapp1;
-        TKapp1 = ConstantsSulfates.TKapp1;
-        Kapp2 = ConstantsSulfates.Kapp2;
-        TKapp2 = ConstantsSulfates.TKapp2;
+        Kapp1 = ConstantsPerchlorates.Kapp1;
+        TKapp1 = ConstantsPerchlorates.TKapp1;
+        Kapp2 = ConstantsPerchlorates.Kapp2;
+        TKapp2 = ConstantsPerchlorates.TKapp2;
         deltaH = pitzer_deltah(Kapp1,TKapp1,Kapp2,TKapp2);
         Kapp = pitzer_kapp(T,Kapp1,TKapp1,deltaH);
-        simulation.constants.Kapp = Kapp;
+        simulation.constants.Kapp = Kapp';
         % %
 
         % Qorg, Qrege Qext %
@@ -223,6 +223,7 @@ function simulations = perchlorates_prun_make(lines)
         simulation.constants.Qext = ConstantsSulfates.Qorg./simulation.input.ext_OA;
         simulation.constants.Qrege = ConstantsSulfates.Qorg./simulation.input.rege_OA;
         simulation.constants.n = n;
+        simulation.constants.zc = simulation.pitzer.z_c;
         % %
 
 
