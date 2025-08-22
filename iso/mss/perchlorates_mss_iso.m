@@ -43,7 +43,8 @@ function perchlorates_mss_iso(casename)
         fya(extracted_anions,i) = ya;
         gamma = pitzer_mss_gamma(simulation,fyc(:,i),fya(:,i),simulation.input.T(i), ...
                                  extracted_cations,extracted_anions);
-        raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(:,i),gamma);
+        %raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(:,i),gamma);
+        raw_error = perchlorates_org_clo4_eq(ca,yc,ya,zc,Kapp(:,i),gamma);
         error = sulfates_mae(raw_error);
     end
 

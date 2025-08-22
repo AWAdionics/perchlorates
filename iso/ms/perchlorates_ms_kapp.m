@@ -1,12 +1,23 @@
 function [kapp,err] = perchlorates_ms_kapp(casename)
-    %perchlorates_ms_iso given a casename runs and displays the simulated isotherme vs the experimental one
+    %perchlorates_ms_kapp used to compute an "optimized" monosels Kapp
     %
-    % to do so it minimizes sulfates_exa_eq_eq and then plots the solutions 
+    %   solves perchlorates_org_eq given experimental values and finds Kapp
+    %   which minimizes it
     %
-    % Args:
-    %   casename : char of case name in input/excel (perchlorates_ms_casename.xlsx)
+    %   Args :
+    %       casename : char of case name in input/excel (perchlorates_ms_casename.xlsx)
     %
-    % see also 
+    %   Returns : 
+    %       kapp_opt : Optimized Kapp
+    %       error_opt : error remaining at best Kapp
+    %
+    %   see also : perchlorates_ms_index (index)
+    %   perchlorates_ms_make (used)
+    %   perchlorates_yli_aq_eq (used)
+    %   pitzer_ms_gamma (external)
+    %   perchlorates_exa_eq_eq (used)
+    %   mvu_mse (external)
+    %   perchlorates_mss_kapp (sister)
     simulation = perchlorates_ms_make(casename);
 
     Kapp = simulation.input.Kapp;
@@ -24,7 +35,7 @@ function [kapp,err] = perchlorates_ms_kapp(casename)
         for i=1:simulation.constants.n_pts
             raw_error = [raw_error;perchlorates_org_eq(cc(i),yc(i),ya(i),zc,Kapp,gamma(i))];
         end
-        error = sulfates_mse(raw_error);
+        error = perchlorates_mse(raw_error);
     end
 
 

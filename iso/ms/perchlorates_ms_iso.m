@@ -1,12 +1,21 @@
 function perchlorates_ms_iso(casename)
     %perchlorates_ms_iso given a casename runs and displays the simulated isotherme vs the experimental one
     %
-    % to do so it minimizes sulfates_exa_eq_eq and then plots the solutions 
+    % to do so it minimizes perchlorates_org_eq and then plots the solutions 
     %
     % Args:
-    %   casename : char of case name in input/excel (perchlorates_ms_casename.xlsx)
+    %   casename : char of case name in input/excel (sulfates_ms_casename.xlsx)
     %
-    % see also 
+    % see also perchlorates_ms_index (index)
+    % perchlorates_ms_make (used)
+    % perchlorates_cclo4_eq_org (used)
+    % perchlorates_ctoy (used)
+    % perchlorates_ceq_aq (used)
+    % pitzer_ms_gamma (external)
+    % perchlorates_org_eq (called)
+    % mvu_scatter (external)
+    % perchlorates_mss_iso (sister)
+    % perchlorates_palgo_eq (cousin)
     simulation = perchlorates_ms_make(casename);
 
     Kapp = simulation.input.Kapp;

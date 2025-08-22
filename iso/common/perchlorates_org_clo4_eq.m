@@ -1,8 +1,8 @@
-function error = perchlorates_org_eq(cc_org_eq,yc_aq_eq,ya_aq_eq,zc,Kapps,gammas)
+function error = perchlorates_org_clo4_eq(ca_org_eq,yc_aq_eq,ya_aq_eq,zc,Kapps,gammas)
 %perchlorates_org_eq 
 
     arguments (Input)
-        cc_org_eq MatrixValueUnit
+        ca_org_eq MatrixValueUnit
         yc_aq_eq MatrixValueUnit
         ya_aq_eq MatrixValueUnit
         zc MatrixValueUnit
@@ -20,9 +20,7 @@ function error = perchlorates_org_eq(cc_org_eq,yc_aq_eq,ya_aq_eq,zc,Kapps,gammas
     %RHS = c_exctot.*kapp_term;
     %error = LHS-RHS;
     
-    LHS = cc_org_eq./c_exctot;
-    RHS = kapp_term./(one+sum(kapp_term));
-    error = mvu(100,'')*(LHS-RHS)./(LHS+RHS+mvu(1,''));
-
-    
+    true_ratio = ca_org_eq./c_exctot;
+    estimated_ratio = kapp_term./(one+sum(kapp_term));
+    error = mvu(100,'')*(true_ratio-sum(zc.*estimated_ratio));
 end
