@@ -1,4 +1,4 @@
-function perchlorates_prun_run(step_size,end_time,killall,lines)
+function perchlorates_prun_run(step_size,end_time,diagnostic,killall,lines)
     %sulfates_p_run runs the simulation 
     % 
     % takes from input/excel/sulfates_p_input and puts results into 
@@ -14,6 +14,9 @@ function perchlorates_prun_run(step_size,end_time,killall,lines)
     
     %default
     if nargin < 3
+        diagnostic = false;
+    end
+    if nargin < 4
         killall = false;
     end
     
@@ -24,14 +27,14 @@ function perchlorates_prun_run(step_size,end_time,killall,lines)
     
     
     %if no lines given, take them all
-    if nargin < 4
+    if nargin < 5
         simulations = perchlorates_prun_make();
     else
         simulations = perchlorates_prun_make(lines);
     end
     
 
-    [c_aq_cs,c_aq_as,c_org_cs,c_org_as,n_stages] = perchlorates_prun_odes(simulations,step_size,end_time);
+    [c_aq_cs,c_aq_as,c_org_cs,c_org_as,n_stages] = perchlorates_prun_odes(simulations,step_size,end_time,diagnostic);
 
     perchlorates_prun_export(c_aq_cs,c_aq_as,c_org_cs,c_org_as,n_stages)
 end

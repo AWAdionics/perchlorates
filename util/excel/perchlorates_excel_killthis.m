@@ -24,7 +24,7 @@ function perchlorates_excel_killthis(file_name,folder)
         % No running Excel, create new instance
         excel = actxserver('Excel.Application');
         connectedToRunning = false;
-        excel.Visible = false;
+        %excel.Visible = false;
     end
 
     try

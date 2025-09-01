@@ -18,7 +18,6 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
     end 
     
     success = true;
-    penalty = 0;
 
     Kapp = simulation.constants.Kapp;
     cations = simulation.constants.cations_extracted;
@@ -30,6 +29,7 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
     OA = simulation.constants.OA;
     extracted_cations = 1:nc;
     extracted_anions = 1:na;
+    err_tol = 1e-2;
 
     %[is,js] = perchlorates_palgo_ijs(n_ext,nc,0);
 
@@ -61,9 +61,9 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
                     aq_prior_a = c_rege_feed_a;
                     org_posterior_a = c_org_neq_a(:,k+1);
                 case k == n_ext+3
-                    aq_prior_c = c_aq_c(:,k-1);
+                    aq_prior_c = c_aq_neq_c(:,k-1);
                     org_posterior_c = c_org_neq_c(:,1);
-                    aq_prior_a = c_aq_a(:,k-1);
+                    aq_prior_a = c_aq_neq_a(:,k-1);
                     org_posterior_a = c_org_neq_a(:,1);
                 otherwise
                     aq_prior_c = c_aq_neq_c(:,k-1);
@@ -101,11 +101,7 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
             %raw_error = perchlorates_org_eq(cc,yc,ya,zc,Kapp(:,i),gamma);
             raw_error = perchlorates_org_clo4_eq(ca,yc,ya,zc,Kapp(:,i),gamma);
             %mae the error to generate an objective
-            penalty_term = penalty*abs(mean(min(yc.value,0)) + mean(min(ya.value,0)));
-            error = sulfates_mae(raw_error) + penalty_term;
-            if penalty_term > 0
-                penalty_term
-            end
+            error = sulfates_mae(raw_error);
         %end
     end
 
@@ -133,7 +129,7 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
         stop = false;  % Default is not to stop
         if strcmp(state, 'iter')
             % Set a condition to stop immediately
-            if optimValues.fval < 0  % or any other custom condition
+            if optimValues.fval < err_tol  % or any other custom condition
                 %disp('Terminating immediately as f(x) is small enough.');
                 stop = true;  % Set stop to true to stop the optimization
             end
@@ -141,28 +137,18 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
     end
 
     options = optimoptions('fmincon', 'Display', 'off', ...
-        'OutputFcn', @stop_func,'StepTolerance', 1e-2,'Algorithm', 'interior-point', ...
+        'OutputFcn', @stop_func,'StepTolerance', 1e-12,'Algorithm', 'interior-point', ...
         'MaxFunctionEvaluations',1000, ...
-        'OptimalityTolerance',1e-2,'ConstraintTolerance', 0,"EnableFeasibilityMode",true,...
-    "SubproblemAlgorithm","cg");
+        'OptimalityTolerance',1e-3,'ConstraintTolerance',0);
     lb = [0,0,0];
     for i=1:simulation.input.n_ext+3
-        %input = feed_org_c(extracted_cations,i);
-        %input = mavu(zeros(prod(size(c_org_c(extracted_cations,:))),1),c_org_c.unit);
-        %input = perchlorates_palgo_cmatvec(c_org_c(extracted_cations,:),input,is,js);
         input = c_org_c(extracted_cations,i);
-        try
-            [x_opt, fval_opt] = fmincon(@(x) objective(x,i),input.value,...
+
+        [x_opt, fval_opt] = fmincon(@(x) objective(x,i),input.value,...
                 [],[], [], [], lb, [],@(x) constraint(x,i), options);
-        catch ME
-            warning('Palgo_eq:SolverFailure',['Equilibrium equation at stage ', num2str(i),' solver failed !'])
-            %x_opt = NaN(size(input));
-            success = false;
-            return
-        end
-        if fval_opt > 1e1
+        if fval_opt > err_tol*10
             warning('Palgo_eq:NonConvergence',['Equilibrium at stage ', num2str(i),' did not converge !'])
-            %x_opt = NaN(size(x_opt));
+
             success = false;
             return
         end
@@ -175,19 +161,16 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
         %save aq results
         c_aq_c(extracted_cations,i) = perchlorates_ceq_aq(c_org_c(extracted_cations,i),aq_prior_c(extracted_cations),org_posterior_c(extracted_cations),OA(i));
         c_aq_a(extracted_anions,i) = perchlorates_ceq_aq(c_org_a(extracted_anions,i),aq_prior_a(extracted_anions),org_posterior_a(extracted_anions),OA(i));
-
-        coc = c_org_c(extracted_cations,i);
-        coa = c_org_a(extracted_anions,i);
-        cac = c_aq_c(extracted_cations,i);
-        caa = c_aq_a(extracted_anions,i);
-        if any(coc.value<0) || any(coa.value<0) || ...
-           any(cac.value<0) || any(caa.value<0)
-            warning('Palgo_eq:NegativeEquilibrium',['Equilibrium at stage ', num2str(i),' converged to negative !'])
-            %x_opt = NaN(size(x_opt));
+        
+        c1 = c_org_c(extracted_cations,i);
+        c2 = c_org_a(extracted_anions,i);
+        c3 = c_aq_c(extracted_cations,i);
+        c4 = c_aq_a(extracted_anions,i);
+        if any(c1.value<0) || any(c2.value<0) || any(c3.value<0) || any(c4.value<0)
+            warning('Palgo_eq:NonConvergence',['Equilibrium at stage ', num2str(i),' is negative !'])
+            
             success = false;
             return
         end
-
-
     end
 end
