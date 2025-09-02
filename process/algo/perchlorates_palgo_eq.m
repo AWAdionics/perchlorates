@@ -30,6 +30,7 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
     extracted_cations = 1:nc;
     extracted_anions = 1:na;
     err_tol = 1e-2;
+    infeasible_tol = 1e-9;
 
     %[is,js] = perchlorates_palgo_ijs(n_ext,nc,0);
 
@@ -125,23 +126,29 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
     end
 
 
-    function stop = stop_func(x, optimValues, state)
+    function stop = stop_func(x, optimValues, state,i)
         stop = false;  % Default is not to stop
         if strcmp(state, 'iter')
             % Set a condition to stop immediately
             if optimValues.fval < err_tol  % or any other custom condition
                 %disp('Terminating immediately as f(x) is small enough.');
-                stop = true;  % Set stop to true to stop the optimization
+                [c, ceq] = constraint(x,i);
+                if all(c < 0)
+                    stop = true;  % Set stop to true to stop the optimization
+                end
             end
         end
     end
 
-    options = optimoptions('fmincon', 'Display', 'off', ...
-        'OutputFcn', @stop_func,'StepTolerance', 1e-12,'Algorithm', 'interior-point', ...
-        'MaxFunctionEvaluations',1000, ...
-        'OptimalityTolerance',1e-3,'ConstraintTolerance',0);
+    
     lb = [0,0,0];
     for i=1:simulation.input.n_ext+3
+
+        options = optimoptions('fmincon', 'Display', 'off', ...
+        'OutputFcn', @(x,optim,state) stop_func(x,optim,state,i),'StepTolerance', 1e-12,'Algorithm', 'interior-point', ...
+        'MaxFunctionEvaluations',1000, ...
+        'OptimalityTolerance',1e-3,'ConstraintTolerance',infeasible_tol);
+
         input = c_org_c(extracted_cations,i);
 
         [x_opt, fval_opt] = fmincon(@(x) objective(x,i),input.value,...
@@ -166,7 +173,7 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
         c2 = c_org_a(extracted_anions,i);
         c3 = c_aq_c(extracted_cations,i);
         c4 = c_aq_a(extracted_anions,i);
-        if any(c1.value<0) || any(c2.value<0) || any(c3.value<0) || any(c4.value<0)
+        if any(c1.value<-infeasible_tol) || any(c2.value<-infeasible_tol) || any(c3.value<-infeasible_tol) || any(c4.value<-infeasible_tol)
             warning('Palgo_eq:NonConvergence',['Equilibrium at stage ', num2str(i),' is negative !'])
             
             success = false;

@@ -95,7 +95,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     a = A(:);
     b = B(:);
     x_ini = [a;b];
-    scaler = 100+x_ini.value;
+    scaler = 10+x_ini.value;
     %initialize matrices
     caq_extracted_mat = mavu(zeros(n_c+n_a,n_tot),unit); 
     corg_extracted_mat = mavu(zeros(n_c+n_a,n_tot),unit); 
@@ -265,7 +265,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     options = odeset('Stats','on', 'OutputFcn', @odeplot,...
         'NonNegative',1:8*(n_ext+3),...
         'NormControl',"on","JPattern",mask,...
-        "RelTol",1e-1,"AbsTol",1e4,'MaxStep',5);
+        "RelTol",1e-7,"AbsTol",1e4,'MaxStep',0.5);
     figure
     [t,x_out] = ode15s(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
     %[t,x_out] = ode45(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
