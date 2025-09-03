@@ -95,7 +95,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     a = A(:);
     b = B(:);
     x_ini = [a;b];
-    scaler = 10+x_ini.value;
+    scaler = 1+0*x_ini.value;
     %initialize matrices
     caq_extracted_mat = mavu(zeros(n_c+n_a,n_tot),unit); 
     corg_extracted_mat = mavu(zeros(n_c+n_a,n_tot),unit); 
@@ -172,7 +172,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
         
         % % Compute equilibriums % %
         [c_aq_eq_c_,c_org_eq_c_,c_aq_eq_a_,c_org_eq_a_,success] = ...
-            perchlorates_palgo_eq(c_aq_eq_c,c_org_eq_c,c_aq_eq_a,c_org_eq_a, ...
+            perchlorates_palgo_eq_alt(c_aq_eq_c,c_org_eq_c,c_aq_eq_a,c_org_eq_a, ...
                                   c_aq_c,c_aq_a,c_org_c,c_org_a,...
                                   simulation);
         if success
@@ -207,7 +207,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
             dcaqdt.value(:,n_ext+1);
             % %  % %
         else
-            dxdt =  1e12 * ones(size(x_in));
+            dxdt =  1e200 * ones(size(x_in));
         end
     end
 
@@ -265,7 +265,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     options = odeset('Stats','on', 'OutputFcn', @odeplot,...
         'NonNegative',1:8*(n_ext+3),...
         'NormControl',"on","JPattern",mask,...
-        "RelTol",1e-7,"AbsTol",1e4,'MaxStep',0.5);
+        "RelTol",1e-1,"AbsTol",1e3,'MaxStep',1);
     figure
     [t,x_out] = ode15s(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
     %[t,x_out] = ode45(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);

@@ -224,7 +224,13 @@ function simulations = perchlorates_prun_make(lines)
         simulation.constants.Qrege = ConstantsSulfates.Qorg./simulation.input.rege_OA;
         simulation.constants.n = n;
         simulation.constants.zc = simulation.pitzer.z_c;
+        simulation.constants.za = simulation.pitzer.z_a;
         % %
+        
+        extracted_cations = 1:length(simulation.constants.cations_extracted);
+        extracted_anions = 1:length(simulation.constants.anions_extracted);
+        simulation.constants.NEC_ext = sum(ext_feed_aq_c)-sum(ext_feed_aq_c(extracted_cations)) - ( sum(ext_feed_aq_a)-sum(ext_feed_aq_a(extracted_anions)));
+        simulation.constants.NEC_rege = sum(rege_feed_aq_c)-sum(rege_feed_aq_c(extracted_cations)) - ( sum(rege_feed_aq_a)-sum(rege_feed_aq_a(extracted_anions)));
 
 
         %% Add to simulations

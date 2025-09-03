@@ -1,4 +1,4 @@
-function error = perchlorates_aq_eq(y_aq_eq,c_org_eq,c_aq_ini,rho,OA)
+function error = perchlorates_aq_eq(y_aq_eq,c_org_eq,c_aq_ini,c_org_ini,rho,OA)
 %perchlorates_aq_eq computes the equilibrium error for the aqueous phase
 %
 %   Args:
@@ -13,6 +13,6 @@ function error = perchlorates_aq_eq(y_aq_eq,c_org_eq,c_aq_ini,rho,OA)
 %
 %   see also
 LHS = y_aq_eq.*rho;
-RHS = c_aq_ini - OA.*c_org_eq;
+RHS = c_aq_ini - OA.*(c_org_eq-c_org_ini);
 error = LHS-RHS;
 end
