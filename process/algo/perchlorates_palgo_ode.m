@@ -25,7 +25,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     
     %% %% Initinialization %% %%
     % Global Constants % 
-    times = 0:step_size:end_time;
+    %times = 0:step_size:end_time;
     %number of cations extracted
     n_c = length(simulation.constants.cations_extracted);
     %number of anions extracted
@@ -75,19 +75,33 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
                  repmat(rege_feed_c,1,3)];
     %Initialize organic equilibrium to input feed for cations
     c_org_eq_c = c_aq_eq_c*mvu(0,'');
+    for i=1:n_ext+3
+        if i <= n_ext
+            c_org_eq_c(1:n_c,i) = mvu(0*[13.34;1.2;13.70],'mmol/ L');
+        else
+            c_org_eq_c(1:n_c,i) = mvu(0*[1.334;0.12;1.370],'mmol/ L');
+        end
+    end
     %Initialize aqueous to input feed for cations
     c_aq_c = c_aq_eq_c;
     %Initialize organic to input feed for cations
-    c_org_c = c_org_eq_c*mvu(0,'');
+    c_org_c = c_org_eq_c;
     %Initialize aqueous equilibrium to input feed for anions
     c_aq_eq_a = [repmat(ext_feed_a,1,n_ext),...
                  repmat(rege_feed_a,1,3)];
     %Initialize organic equilibrium to input feed for anions
     c_org_eq_a = c_aq_eq_a*mvu(0,'');
+    for i=1:n_ext+3
+        if i <= n_ext
+            c_org_eq_a(1:n_a,i) = mvu(0*43.23,'mmol/ L');
+        else
+            c_org_eq_a(1:n_a,i) = mvu(0*4.323,'mmol/ L');
+        end
+    end
     %Initialize aqueous to input feed for anions
     c_aq_a = c_aq_eq_a;
     %Initialize organic to input feed for anions
-    c_org_a = c_org_eq_a*mvu(0,'');
+    c_org_a = c_org_eq_a;
     %Optimization inputs
     %take first n_c or n_a columns of the inflow
     A = [c_aq_c(1:n_c,:);c_aq_a(1:n_a,:)]';
@@ -95,7 +109,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     a = A(:);
     b = B(:);
     x_ini = [a;b];
-    scaler = 10+x_ini.value;
+    scaler = 1+0*x_ini.value;
     %initialize matrices
     caq_extracted_mat = mavu(zeros(n_c+n_a,n_tot),unit); 
     corg_extracted_mat = mavu(zeros(n_c+n_a,n_tot),unit); 
@@ -180,7 +194,11 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
             c_org_eq_c = mavu((c_org_eq_c_.value),c_org_eq_c_.unit);
             c_aq_eq_a = mavu((c_aq_eq_a_.value),c_aq_eq_a_.unit);
             c_org_eq_a = mavu((c_org_eq_a_.value),c_org_eq_a_.unit);
-        
+
+            disp('eq')
+            test1 = c_org_eq_a_(1:3,:)
+            disp('actual')
+            test2 = c_org_a(1:3,:)
             % %  % %
     
             % % Compute ODE % %
@@ -202,12 +220,14 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
             dxdt = rmat*c_extracted_vec + eqmat*c_extracted_vec_eq + vec;
             dxdt = dxdt.value./scaler;
             [dcaqdt,daaqdt,dcorgdt,daorgdt] = state_derivative(mavu(dxdt,dcaqdt_extracted_mat.unit));
+            disp('org')
+            daorgdt
             c_aq_eq_c.value(1:n_c,n_ext+1);
             c_aq_c.value(1:n_c,n_ext+1);
             dcaqdt.value(:,n_ext+1);
             % %  % %
         else
-            dxdt =  1e12 * ones(size(x_in));
+            error('Palgo_ode:EqNonConvergence','Equilibrium did Not Converge')
         end
     end
 
@@ -262,12 +282,12 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     %% %%  %% %%
 
     %% %% ODE solver %% %%
-    options = odeset('Stats','on', 'OutputFcn', @odeplot,...
-        'NonNegative',1:8*(n_ext+3),...
-        'NormControl',"on","JPattern",mask,...
-        "RelTol",1e-7,"AbsTol",1e4,'MaxStep',0.5);
-    figure
-    [t,x_out] = ode15s(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
+    options = odeset('Stats','off',...
+            'NonNegative',1:8*(n_ext+3),...
+            'NormControl',"on","JPattern",mask,...
+            "RelTol",1e-1,"AbsTol",1e2);
+    %[t,x_out] = ode15s(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
+    [times,x_out] = perchlorates_palgo_ode_ss(@(t,x) ddt_func(t,x), x_ini.value./scaler,options);
     %[t,x_out] = ode45(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
     %[t,x_out] = ode89(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
     %% %%  %% %%

@@ -219,9 +219,9 @@ function simulations = perchlorates_prun_make(lines)
         % %
 
         % Qorg, Qrege Qext %
-        simulation.constants.Qorg = ConstantsSulfates.Qorg;
-        simulation.constants.Qext = ConstantsSulfates.Qorg./simulation.input.ext_OA;
-        simulation.constants.Qrege = ConstantsSulfates.Qorg./simulation.input.rege_OA;
+        simulation.constants.Qorg = ConstantsPerchlorates.Qorg;
+        simulation.constants.Qext = ConstantsPerchlorates.Qorg./simulation.input.ext_OA;
+        simulation.constants.Qrege = ConstantsPerchlorates.Qorg./simulation.input.rege_OA;
         simulation.constants.n = n;
         simulation.constants.zc = simulation.pitzer.z_c;
         % %
