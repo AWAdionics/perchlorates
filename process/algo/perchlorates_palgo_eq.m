@@ -212,7 +212,7 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
         'MaxFunctionEvaluations',1000, ...
         'OptimalityTolerance',1e-9,'ConstraintTolerance',infeasible_tol);
         if i == 6
-
+            a=1;
         end
         if all(ub > lb)
 
@@ -223,7 +223,7 @@ function [c_aq_c,c_org_c,c_aq_a,c_org_a,success] = perchlorates_palgo_eq( ...
                 [x_opt, fval_opt] = fmincon(@(x) objective(x,i),input.value,...
                         A.value,b.value, [], [], lb, ub,[], options); %@(x) constraint(x,i)
             else
-                disp('Skipped')
+                %disp('Skipped')
             end
         else
             x_opt = [0;0;0];

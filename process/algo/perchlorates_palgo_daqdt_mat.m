@@ -97,10 +97,14 @@ function [real_mat,feed_vec,eq_mat] = perchlorates_palgo_daqdt_mat(simulation)
     Vmix = ConstantsPerchlorates.Vmix;
     ext_ak = simulation.input.ext_ak;
     rege_ak = simulation.input.rege_ak;
-    persistent one
+    persistent one one_in_ten
     if isempty(one)
         one = mvu(1,'');
     end
+    %if one_in_ten()
+    %    one_in_ten = mvu(1/100,'');
+    %end
+    one_in_ten = mvu(1/1000,'');
     
     %real terms
     %coef is in brackets [] which will be multiplied by C_aq,k or k-1

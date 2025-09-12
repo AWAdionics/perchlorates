@@ -195,10 +195,14 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
             c_aq_eq_a = mavu((c_aq_eq_a_.value),c_aq_eq_a_.unit);
             c_org_eq_a = mavu((c_org_eq_a_.value),c_org_eq_a_.unit);
 
-            disp('eq')
-            test1 = c_org_eq_a_(1:3,:)
+            disp('org eq')
+            test1 = c_org_eq_a_(1,:)
             disp('actual')
-            test2 = c_org_a(1:3,:)
+            test2 = c_org_a(1,:)
+            disp('aq eq')
+            test1 = c_aq_eq_a_(1,:)
+            disp('actual')
+            test2 = c_aq_a(1,:)
             % %  % %
     
             % % Compute ODE % %
@@ -288,6 +292,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
             "RelTol",1e-1,"AbsTol",1e2);
     %[t,x_out] = ode15s(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
     [times,x_out] = perchlorates_palgo_ode_ss(@(t,x) ddt_func(t,x), x_ini.value./scaler,options);
+    %[times,x_out] = perchlorates_palgo_ode_fmincon(@(t,x) ddt_func(t,x),x_ini.value./scaler,options);
     %[t,x_out] = ode45(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
     %[t,x_out] = ode89(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
     %% %%  %% %%

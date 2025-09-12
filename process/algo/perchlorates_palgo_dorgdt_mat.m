@@ -62,11 +62,16 @@ function [real_mat,eq_mat] = perchlorates_palgo_dorgdt_mat(simulation)
     ext_ak = simulation.input.ext_ak;
     rege_ak = simulation.input.rege_ak;
 
-    persistent one
+    persistent one one_in_ten
     if isempty(one)
         one = mvu(1,'');
+        
     end
-    
+    %if one_in_ten()
+    %    one_in_ten = mvu(1/100,'');
+    %end
+    one_in_ten = mvu(1/1000,'');
+    ten = mvu(1,''); %2 worked
     %real terms
     %coef is in brackets [] which will be multiplied by C_org,k or k-1
 
@@ -94,7 +99,7 @@ function [real_mat,eq_mat] = perchlorates_palgo_dorgdt_mat(simulation)
     %[- k_ext a_ext + (1 + O/A_ext)Q^ext_org/V_mix]   *   C_org,k 
     diag_ext = -(ext_ak+common_ext);
     %[- k_rege a_rege + (1 + O/A_rege)Q^rege_org/V_mix]   *   C_org,k 
-    diag_rege = -(rege_ak+common_rege);
+    diag_rege = -(rege_ak+common_rege)*ten;
     
     %current stage terms are on diagonal
     ondiag = [repmat(diag_ext,1,n_ext),... %extraction

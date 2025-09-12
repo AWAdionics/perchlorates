@@ -5,7 +5,7 @@ function [t_outer,x_out_outer] = perchlorates_palgo_ode_ss(ddt_func,x_ini,option
         options 
         outer_steps = 25
         tolerance = 1e-1
-        max_step = 30
+        max_step = 300
         max_outer_step_size = 50
         min_outer_step_size = 1e-3
     end
@@ -46,7 +46,8 @@ function [t_outer,x_out_outer] = perchlorates_palgo_ode_ss(ddt_func,x_ini,option
         end
         try
             %[t,x_out] = ode15s(ddt_func,times,x_ini,options);
-            [t,x_out] = ode45(ddt_func,times,x_ini,options);
+            %[t,x_out] = ode45(ddt_func,times,x_ini,options);
+            [t,x_out] = ode23(ddt_func,times,x_ini,options);
         catch ME
             if strcmp(ME.identifier, 'Palgo_ode:EqNonConvergence')
                 outer_steps = outer_steps/10;
