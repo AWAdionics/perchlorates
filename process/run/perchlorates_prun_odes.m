@@ -1,4 +1,4 @@
-function [c_aq_c_ends,c_aq_a_ends,c_org_c_ends,c_org_a_ends,n] = perchlorates_prun_odes(simulations,step_size,end_time,diagnostic)
+function [c_aq_c_ends,c_aq_a_ends,c_org_c_ends,c_org_a_ends,n] = perchlorates_prun_odes(simulations,diagnostic,ode_tolerance,max_steps)
     %sulfates_p_odes runs all ode simulations
     %
     % Simple function that executes a bunch of sulfates_p_ode and stiches
@@ -29,7 +29,7 @@ function [c_aq_c_ends,c_aq_a_ends,c_org_c_ends,c_org_a_ends,n] = perchlorates_pr
     for i =1:length(simulations)
         simulation = simulations(i);
         [c_aq_c_end,c_aq_a_end,c_org_c_end,c_org_a_end] = ...
-                    perchlorates_palgo_ode(simulation,step_size,end_time,diagnostic);
+                    perchlorates_palgo_ode(simulation,diagnostic,ode_tolerance,max_steps);
         k = simulations(i).input.n_ext;
 
         %Pad with Nans for extra columns

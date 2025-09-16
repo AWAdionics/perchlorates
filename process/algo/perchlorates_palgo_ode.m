@@ -1,5 +1,5 @@
 function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted] = ...
-    perchlorates_palgo_ode(simulation,step_size,end_time,diagnostic)
+    perchlorates_palgo_ode(simulation,diagnostic,ode_tolerance,max_steps)
     %perchlorates_palgo_ode given a simulation input solves ODE and returns stable state
     %
     % Best aks found (02/07/2025):
@@ -22,6 +22,12 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
     %   cso4_org_end : mvu of SO4 in organic phase at the end of ODE for each stage
     %
     % see also 
+    arguments
+        simulation
+        diagnostic
+        ode_tolerance = 1e-1
+        max_steps = 300
+    end
     
     %% %% Initinialization %% %%
     % Global Constants % 
@@ -291,7 +297,7 @@ function [c_aq_c_extracted,c_aq_a_extracted,c_org_c_extracted,c_org_a_extracted]
             'NormControl',"on","JPattern",mask,...
             "RelTol",1e-1,"AbsTol",1e2);
     %[t,x_out] = ode15s(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
-    [times,x_out] = perchlorates_palgo_ode_ss(@(t,x) ddt_func(t,x), x_ini.value./scaler,options);
+    [times,x_out] = perchlorates_palgo_ode_ss(@(t,x) ddt_func(t,x), x_ini.value./scaler,options,ode_tolerance,max_steps);
     %[times,x_out] = perchlorates_palgo_ode_fmincon(@(t,x) ddt_func(t,x),x_ini.value./scaler,options);
     %[t,x_out] = ode45(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);
     %[t,x_out] = ode89(@(t,x) ddt_func(t,x),times,x_ini.value./scaler,options);

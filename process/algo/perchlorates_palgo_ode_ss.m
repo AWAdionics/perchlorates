@@ -1,11 +1,11 @@
-function [t_outer,x_out_outer] = perchlorates_palgo_ode_ss(ddt_func,x_ini,options,outer_steps,tolerance,max_step,max_outer_step_size,min_outer_step_size)
+function [t_outer,x_out_outer] = perchlorates_palgo_ode_ss(ddt_func,x_ini,options,tolerance,max_step,outer_steps,max_outer_step_size,min_outer_step_size)
     arguments
         ddt_func
         x_ini 
         options 
-        outer_steps = 25
         tolerance = 1e-1
         max_step = 300
+        outer_steps = 25
         max_outer_step_size = 50
         min_outer_step_size = 1e-3
     end
