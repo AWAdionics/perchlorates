@@ -1,4 +1,5 @@
 function [t_outer,x_out_outer] = perchlorates_palgo_ode_fmincon(ddt_func,x_ini,options,err_tol,infeasible_tol)
+    %defunct
     arguments
         ddt_func
         x_ini 
