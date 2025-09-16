@@ -5,15 +5,15 @@ classdef ConstantsPerchlorates
         cations = {'Li','Ca','Mg' ... %Extracted
                    ,'Na','K'}         %Not Extracted
         anions = {'ClO4',...          %Extracted
-                  'Cl','NO3','SO4'}     %Not Extracted
+                  'Cl','NO3','SO4'}    %Not Extracted
         cations_extracted = {'Li','Ca','Mg'}
         anions_extracted = {'ClO4'}
         c0 = mvu(1000,'mmol/ L')
         y0 = mvu(1000,'mmol/kg_eau')
         Qorg = mvu(6.67e-8,' m^3/ s') %6.67e-7
         Vmix = mvu(1.7e-4,' m^3')
-        ak_ext = mvu(1.8e-2,'/ s')
-        ak_rege = mvu(2*2.18,'/ s') %2.4222*1.8e-2 is more likely
+        ak_ext = mvu(0.009,'/ s') %1.8e-2
+        ak_rege = mvu(0.0218*8,'/ s') %2*2.18
         c_exctot = mvu(50,'mmol/ L')
 
         %Process only
